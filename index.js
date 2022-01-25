@@ -28,10 +28,9 @@ server.on('connection', socket => {
       const test = {
         text: `update number ${updates}`
       }
-      console.log('sending update just as an example')
       socket.write(`${JSON.stringify(test)}\n`, 'utf8');
     updates++;
-  }, 500);
+  }, 100);
 });
 
 server.listen(4000, 'localhost');
