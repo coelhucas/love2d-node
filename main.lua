@@ -1,31 +1,19 @@
 local host, port = 'localhost', 4000
-local socket = require('socket')
-local tcp = socket.tcp()
 local utf8 = require("utf8")
+local socket = require 'sock'
 
-status = "not connected"
+status = 0 -- 0 = disconnected, 1 = connected
 
+x = 0
+y = 100
 
 current_answer = "Waiting for messages..."
 
--- tcp:connect(host, port)
+-- connectionThread:start()
 
-
--- tcp:send("hello there\n\r")
--- local answer = tcp:receive()
--- print(answer)
-
-thread = love.thread.newThread("test.lua")
-channel = love.thread.getChannel("request")
-
-thread:start()
-
-if tcp:getpeername() then
-  status = "connected"
-else
-  -- print("not connected")
+function cb(data)
+  current_answer = data .. '\n' .. current_answer
 end
--- tcp:close()
 
 function love.textinput(t)
   text = text .. t
@@ -35,16 +23,29 @@ end
 
 function love.load()
   text = ""
+  socket:connect('localhost', 4000)
+  socket:setCallback(cb)
+end
+
+function process_data(data) -- data: string
+  current_answer = data .. '\n' .. current_answer
+
+  if data == 'disconnected' then
+    status = 0
+    love.timer.sleep(1.5)
+    return
+  end
+  if data == 'connected' then status = 1 end
 end
 
 function love.update(dt)
-  -- local a = tcp:receive()
-  data = channel:pop(a)
+  x = x + 100 * dt
 
-  if data then
-    current_answer = data .. "\n" .. current_answer
-
+  if x > love.graphics.getWidth() then
+    x = 0
   end
+
+  socket:update()
 end
 
 function love.keypressed(key)
@@ -60,10 +61,8 @@ function love.keypressed(key)
   end
 
   if key == "return" then
-    -- tcp:send(text .. "\n\r")
-    -- channel:set('msg', text)
+    socket:send(text)
     text = ""
-    thread:start()
   end
 end
 
@@ -73,11 +72,13 @@ function love.draw()
   love.graphics.print(current_answer, 10, 10)
   love.graphics.printf(text, 10, 30, love.graphics.getWidth())
 
-  -- if status == "connected" then
-  --   love.graphics.setColor(0, 1, 0)
-  -- else
-  --   love.graphics.setColor(1, 0, 0)
-  -- end
+  love.graphics.circle('line', x, y, 10)
 
-  -- love.graphics.print(status, 10, 50)
+  if status == 1 then
+    love.graphics.setColor(0, 1, 0)
+  else
+    love.graphics.setColor(1, 0, 0)
+  end
+
+  love.graphics.print(status == 1 and 'connected' or 'disconnected', love.graphics.getWidth() - 128, love.graphics.getHeight() - 64)
 end
