@@ -1,4 +1,4 @@
-# Love2D -> Node
+# Lua (LÖVE) <-> Node
 
 ## About
 This is a sample of how to communicate between "pure" [node:net](https://nodejs.org/api/net.html) module and [Lua Socket](https://github.com/lunarmodules/luasocket) using LÖVE & lua socket.
