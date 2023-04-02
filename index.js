@@ -1,36 +1,44 @@
-const net = require('net');
+const net = require("net");
 
 const server = net.createServer(socket => {
-  socket.on('error', (er) => {
-    console.log('error', er);
+  socket.on("error", (e) => {
+    console.log(e);
   })
 
-  socket.on('data', data => {
-    console.log("Message from LOVE2D: " + data);
-    socket.write('Server received your msg ;)\n', 'utf8');
+  socket.on("data", data => {
+    console.log("Received message from Love2D: " + data);
+    
+    socket.write("Message received\n", "utf8");
   });
 
-  socket.on('close', (a) => {
-    console.log('connection closed', a ? 'with error' : 'without error');
+  socket.on("close", (e) => {
+    if (e) {
+      console.error("Connection closed with error")
+    }
+    else {
+      console.log("Connection closed")
+    }
     socket.end()
   })
 })
 
-server.on('connection', socket => {
-  console.log('started connection');
+server.on("connection", socket => {
+  console.log("Started new connection");
   let updates = 0;
 
-  let batata = setInterval(() => {
+  const process = setInterval(() => {
+    // We don"t need to keep sending messages after the connection is closed
     if (socket.destroyed) {
-      clearInterval(batata);
+      clearInterval(process);
       return;
     }
-      const test = {
-        text: `update number ${updates}`
+      const example = {
+        text: `Sent ${updates} update(s)`
       }
-      socket.write(`${JSON.stringify(test)}\n`, 'utf8');
-    updates++;
+      socket.write(`${JSON.stringify(example)}\n`, "utf8");
+    
+      updates++;
   }, 100);
 });
 
-server.listen(4000, 'localhost');
+server.listen(4000, "localhost");
